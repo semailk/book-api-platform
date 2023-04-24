@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -9,20 +11,24 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Repository\BookRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
 
 #[ApiResource(operations: [
-    new Get(),
-    new Patch(),
-    new GetCollection(),
-    new Post(),
-    new Delete(),
-])]
+new Get(),
+new Patch(),
+new GetCollection(),
+new Post(),
+new Delete(),
+],
+)]
+
+
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 class Book
 {
-    #[ORM\Id,ORM\Column(type: 'integer'), ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ORM\Id, ORM\Column(type: 'integer'), ORM\GeneratedValue(strategy: 'AUTO')]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', nullable: true)]
@@ -43,9 +49,13 @@ class Book
     #[ORM\OneToMany(mappedBy: 'book', targetEntity: Review::class)]
     public iterable $reviews;
 
+    #[ORM\ManyToMany(targetEntity: Genre::class, inversedBy: 'books')]
+    private Collection $genre;
+
     public function __construct()
     {
         $this->reviews = new ArrayCollection();
+        $this->genre = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -127,5 +137,29 @@ class Book
     public function setAuthor(string $author): void
     {
         $this->author = $author;
+    }
+
+    /**
+     * @return Collection<int, Genre>
+     */
+    public function getGenre(): Collection
+    {
+        return $this->genre;
+    }
+
+    public function addGenre(Genre $genre): self
+    {
+        if (!$this->genre->contains($genre)) {
+            $this->genre->add($genre);
+        }
+
+        return $this;
+    }
+
+    public function removeGenre(Genre $genre): self
+    {
+        $this->genre->removeElement($genre);
+
+        return $this;
     }
 }
