@@ -1,0 +1,3 @@
+App\Entity\Book:
+  book_{1..100}:
+    title: <sentence(4)>
